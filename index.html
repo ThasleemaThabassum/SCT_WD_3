@@ -151,7 +151,7 @@
     <span class="q-type-badge" id="qTypeBadge"></span>
     <p class="question-text" id="questionText"></p>
     <div class="options" id="optionsArea"></div>
-    <input type="text" class="fill-input" id="fillInput" placeholder="Type your answer..." style="display:none"/>
+
     <div class="feedback" id="feedback"></div>
     <div class="action-row">
       <button class="btn btn-secondary" id="skipBtn" onclick="skipQuestion()">Skip →</button>
@@ -185,12 +185,12 @@ const questions = [
   { type:'mc', q:'Which CSS property is used to change the text color?', options:['font-color','text-color','color','foreground'], answer:2 },
   { type:'mc', q:'Which language runs in a web browser?', options:['Java','C++','Python','JavaScript'], answer:3 },
   { type:'mc', q:'What does CSS stand for?', options:['Computer Style Sheets','Cascading Style Sheets','Creative Style System','Colorful Style Sheets'], answer:1 },
-  { type:'tf', q:'Python is a compiled programming language.', options:['True','False'], answer:1 },
-  { type:'mc', q:'Which HTML tag is used to create a hyperlink?', options:['<link>','<href>','<a>','<url>'], answer:2 },
-  { type:'tf', q:'In JavaScript, "==" checks both value and type.', options:['True','False'], answer:1 },
+  { type:'mc', q:'Which HTML tag is used to create a hyperlink?', options:['&lt;link&gt;','&lt;href&gt;','&lt;a&gt;','&lt;url&gt;'], answer:2 },
   { type:'mc', q:'Which property makes a flex container wrap items?', options:['flex-flow','flex-wrap','flex-direction','flex-grow'], answer:1 },
-  { type:'fill', q:'The HTML tag used to display the largest heading is <___>.', answer:'h1' },
-  { type:'fill', q:'In Python, to print output we use the ___() function.', answer:'print' }
+  { type:'mc', q:'What does the "C" in CSS stand for?', options:['Creative','Cascading','Colorful','Computer'], answer:1 },
+  { type:'mc', q:'Which HTML tag is used to insert an image?', options:['&lt;image&gt;','&lt;src&gt;','&lt;img&gt;','&lt;pic&gt;'], answer:2 },
+  { type:'mc', q:'Which JavaScript method is used to select an element by its ID?', options:['getElement()','querySelector()','getElementById()','findById()'], answer:2 },
+  { type:'mc', q:'Which CSS property is used to add space inside an element border?', options:['margin','spacing','padding','border-space'], answer:2 }
 ];
 
 let current = 0, score = 0, correct = 0, wrong = 0, skipped = 0;
@@ -208,47 +208,28 @@ function loadQuestion() {
   timeLeft = 15;
   clearInterval(timerInterval);
   const q = questions[current];
-  document.getElementById('qNum').textContent = 'Question ' + (current+1) + ' of ' + questions.length;
-  document.getElementById('scoreTrack').textContent = 'Score: ' + score;
-  document.getElementById('progressBar').style.width = ((current+1)/questions.length*100) + '%';
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('feedback').textContent = '';
-
-  const badge = document.getElementById('qTypeBadge');
-  if (q.type === 'mc') { badge.textContent = 'Multiple Choice'; badge.className = 'q-type-badge q-type-mc'; }
-  else if (q.type === 'tf') { badge.textContent = 'True / False'; badge.className = 'q-type-badge q-type-tf'; }
-  else { badge.textContent = 'Fill in the Blank'; badge.className = 'q-type-badge q-type-fill'; }
-
-  document.getElementById('questionText').textContent = q.q;
-
-  const optArea = document.getElementById('optionsArea');
-  const fillInput = document.getElementById('fillInput');
-  const submitBtn = document.getElementById('submitBtn');
-  const skipBtn = document.getElementById('skipBtn');
-
-  if (q.type === 'fill') {
-    optArea.style.display = 'none';
-    fillInput.style.display = 'block';
-    fillInput.value = '';
-    fillInput.className = 'fill-input';
-    fillInput.disabled = false;
-    submitBtn.style.display = 'inline-block';
-    skipBtn.style.display = 'inline-block';
-  } else {
-    fillInput.style.display = 'none';
-    submitBtn.style.display = 'none';
-    skipBtn.style.display = 'inline-block';
-    optArea.style.display = 'flex';
-    const letters = ['A','B','C','D'];
-    optArea.innerHTML = '';
-    q.options.forEach(function(opt, i) {
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      btn.innerHTML = '<span class="option-letter">' + letters[i] + '</span>' + opt;
-      btn.onclick = function() { selectOption(i); };
-      optArea.appendChild(btn);
-    });
-  }
+  document.getElementById("qNum").textContent = "Question " + (current+1) + " of " + questions.length;
+  document.getElementById("scoreTrack").textContent = "Score: " + score;
+  document.getElementById("progressBar").style.width = ((current+1)/questions.length*100) + "%";
+  document.getElementById("feedback").className = "feedback";
+  document.getElementById("feedback").textContent = "";
+  const badge = document.getElementById("qTypeBadge");
+  badge.textContent = "Multiple Choice";
+  badge.className = "q-type-badge q-type-mc";
+  document.getElementById("questionText").textContent = q.q;
+  const optArea = document.getElementById("optionsArea");
+  optArea.style.display = "flex";
+  document.getElementById("submitBtn").style.display = "none";
+  document.getElementById("skipBtn").style.display = "inline-block";
+  const letters = ["A","B","C","D"];
+  optArea.innerHTML = "";
+  q.options.forEach(function(opt, i) {
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.innerHTML = "<span class=\"option-letter\">" + letters[i] + "</span>" + opt;
+    btn.onclick = function() { selectOption(i); };
+    optArea.appendChild(btn);
+  });
   startTimer();
 }
 
@@ -270,7 +251,7 @@ function updateTimerDisplay() {
 function timeUp() {
   answered = true;
   const q = questions[current];
-  showFeedback(false, q.type === 'fill' ? q.answer : q.options[q.answer]);
+  showFeedback(false, q.options[q.answer]);
   wrong++;
   disableOptions();
   setTimeout(nextQuestion, 1800);
@@ -296,26 +277,7 @@ function selectOption(i) {
   setTimeout(nextQuestion, 1800);
 }
 
-function submitAnswer() {
-  if (answered) return;
-  const q = questions[current];
-  const val = document.getElementById('fillInput').value.trim().toLowerCase();
-  answered = true;
-  clearInterval(timerInterval);
-  document.getElementById('fillInput').disabled = true;
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('skipBtn').disabled = true;
-  if (val === q.answer.toLowerCase()) {
-    document.getElementById('fillInput').classList.add('correct');
-    score++; correct++;
-    showFeedback(true);
-  } else {
-    document.getElementById('fillInput').classList.add('wrong');
-    wrong++;
-    showFeedback(false, q.answer);
-  }
-  setTimeout(nextQuestion, 1800);
-}
+
 
 function skipQuestion() {
   if (answered) return;
@@ -323,7 +285,6 @@ function skipQuestion() {
   clearInterval(timerInterval);
   skipped++;
   disableOptions();
-  document.getElementById('fillInput').disabled = true;
   nextQuestion();
 }
 
